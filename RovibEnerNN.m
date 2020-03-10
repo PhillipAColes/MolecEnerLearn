@@ -97,7 +97,7 @@ end
 
 % forward propagation
 for layer = 1:num_layers-1
-layer
+
     if strcmp(activation_function_type{layer},'sigmoid')
         fprintf('layer %d uses sigmoid activation function \n',layer)
         z = activation{layer}*weights_array{layer};
@@ -107,24 +107,29 @@ layer
         activation_next_layer = activation{layer}*weights_array{layer};
     end
     
+    % Fill cell of node activation arrays using forward propogation
     if layer+1 == num_layers
         activation(layer+1) = {activation_next_layer}
     else
-       % Fill cell of node activation arrays using forward propogation
        % Array of ones for bias term
        activation(layer+1) = {[ones(num_data_samples,1) activation_next_layer]}
     end
 
     % initialise cell array containing node activation errors for each layer
-    % except input features. No bias term included for activation error
-    activation_error(layer) = {zeros(num_data_samples,num_units(layer+1))}
+    % except input layer
+    if layer == num_layers-1
+        % No bias node in final (output) layer
+        activation_error(layer) = {zeros(num_data_samples,num_units(layer+1))}
+    else
+        activation_error(layer) = {zeros(num_data_samples,num_units(layer+1)+1)}
+    end
     
 end
 
 fprintf('predictions for %d data points are: \n',num_data_samples)
 hypothesis = activation{num_layers}
 
-% don't consider input data to have any activation error
+% Activation error of final (output) layer
 activation_error{num_layers-1} = activation{num_layers} - y
 
 %%
@@ -134,7 +139,7 @@ for layer = num_layers-1:-1:2
     if strcmp(activation_function_type{layer},'sigmoid')
     exit
     elseif strcmp(activation_function_type{layer},'linear')
-    activation_error()
+    activation_error{layer} = activation_error{layer}*weights_array{layer}'
     end
     
 end
