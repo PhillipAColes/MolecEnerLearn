@@ -29,7 +29,7 @@ clear all;  clc
 cd C:\Users\Phillip\Workspace\ML\RovibEner
 data = load('backproptest-1');
 y = data(:,1)
-X = [data(:,2) data(:,3)]
+X = [data(:,2) data(:,3) data(:,4)]
 
 % user should modify the below ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 
@@ -38,10 +38,10 @@ num_hidden_layers = 1;
 
 % number of units in each hidden layer
 %num_hidden_units = [ 20 10 ];
-num_hidden_units = [2]
+num_hidden_units = [3]
 
 % activation function types
-activation_function_type = {'sigmoid', 'sigmoid'};
+activation_function_type = {'linear', 'linear'};
 
 feature_scaling_tf = false;
 
@@ -72,11 +72,12 @@ epsilon_init = 0.12
 % individual elements accessed by 'weights_array{layer}(i,j)'
 for layer = 1:num_hidden_layers+1
     
-    %weights_array(layer) = ...
-    %{rand(num_units(layer),num_units(layer+1)) * 2 * epsilon_init - epsilon_init};
+    % num_units(layer)+1 <=== +1 comes from bias term 
+    weights_array(layer) = ...
+    {rand(num_units(layer)+1,num_units(layer+1)) * 2 * epsilon_init - epsilon_init}
     
     % for testing:
-    weights_array(layer) = {ones(num_units(layer),num_units(layer+1))}
+    %weights_array(layer) = {ones(num_units(layer),num_units(layer+1))}
 end
 
 if feature_scaling_tf == true
@@ -86,16 +87,17 @@ if feature_scaling_tf == true
     X_range = range(X);
     X_range_mat = repmat(X_range,size(X,1),1);
     X_scaled = (X - X_av_mat) ./ X_range_mat;
-    
+
     % activation of first layer is just the input data (features)
-    activation(1) = {X_scaled};
+    activation(1) = {[ones(num_data_samples,1) X_scaled]};
 else
-    activation(1) = {X};
+    
+    activation(1) = {[ones(num_data_samples,1) X]}
 end
 
 % forward propagation
 for layer = 1:num_layers-1
-
+layer
     if strcmp(activation_function_type{layer},'sigmoid')
         fprintf('layer %d uses sigmoid activation function \n',layer)
         z = activation{layer}*weights_array{layer};
@@ -105,10 +107,16 @@ for layer = 1:num_layers-1
         activation_next_layer = activation{layer}*weights_array{layer};
     end
     
-    % fill cell of node activation arrays using forward propogation
-    activation(layer+1) = {activation_next_layer}
-    
+    if layer+1 == num_layers
+        activation(layer+1) = {activation_next_layer}
+    else
+       % Fill cell of node activation arrays using forward propogation
+       % Array of ones for bias term
+       activation(layer+1) = {[ones(num_data_samples,1) activation_next_layer]}
+    end
+
     % initialise cell array containing node activation errors for each layer
+    % except input features. No bias term included for activation error
     activation_error(layer) = {zeros(num_data_samples,num_units(layer+1))}
     
 end
@@ -124,9 +132,9 @@ for layer = num_layers-1:-1:2
     
     layer
     if strcmp(activation_function_type{layer},'sigmoid')
-    activation_error()
+    exit
     elseif strcmp(activation_function_type{layer},'linear')
-    
+    activation_error()
     end
     
 end
