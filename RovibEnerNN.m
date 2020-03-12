@@ -44,7 +44,7 @@ num_hidden_units = [3 5 3]
 % activation function types
 activation_function_type = {'linear', 'linear', 'linear', 'linear'};
 
-feature_scaling_tf = false;
+feature_scaling_tf = true;
 
 % regularisation parameter
 lambda = 1
@@ -70,7 +70,7 @@ num_data_samples = length(y);
 num_units = [ size(X,2) num_hidden_units 1 ];
 
 % total number of layers
-num_layers = num_hidden_layers + 2
+num_layers = num_hidden_layers + 2;
 
 % preliminary checks for user input parameters
 if size(num_hidden_units,2) ~= num_hidden_layers
@@ -96,65 +96,42 @@ for layer = 1:num_hidden_layers+1
 end
 
 if feature_scaling_tf == true
-    % scale features
-    X_av = mean(X);
-    X_av_mat = repmat(X_av,size(X,1),1);
-    X_range = range(X);
-    X_range_mat = repmat(X_range,size(X,1),1);
-    X_scaled = (X - X_av_mat) ./ X_range_mat;
-
-    % activation of first layer is just the input data (features)
-    activation(1) = {[ones(num_data_samples,1) X_scaled]};
-else
     
-    activation(1) = {[ones(num_data_samples,1) X]};
+    X_scaled = ScaleFeatures(X);
+    X = X_scaled;
+    
 end
+
 
 %%~~~~~~~~~~~~~~~~~~~~~~%%
 %%% Forward propagation %%
 %%~~~~~~~~~~~~~~~~~~~~~~%%
 
-for layer = 1:num_layers-1
-layer
-    if strcmp(activation_function_type{layer},'sigmoid')
-        fprintf('layer %d uses sigmoid activation function \n',layer)
-        z = activation{layer}*weights_array{layer};
-        activation_next_layer = 1 ./ (1+exp(-z));
-    elseif strcmp(activation_function_type{layer},'linear')
-        fprintf('layer %d uses linear activation function \n',layer)
-        activation_next_layer = activation{layer}*weights_array{layer};
-    end
-    
-    % Fill cell of node activation arrays using forward propogation
-    if layer+1 == num_layers
-        % No bias term added for output layer
-        activation(layer+1) = {activation_next_layer};
-    else
-       % Array of ones for bias term
-       activation(layer+1) = {[ones(num_data_samples,1) activation_next_layer]};
-    end
-
-    % initialise cell array containing node activation errors for each layer
-    % except input layer
-    if layer == num_layers-1
-        % No bias term in final (output) layer        
-        activation_error(layer) = {zeros(num_units(layer+1),num_data_samples)};
-    else
-        
-        activation_error(layer) = {zeros(num_units(layer+1)+1,num_data_samples)};
-    end
-    
-end
-
+[activation] = ForwardPropagation(weights_array, num_layers, num_data_samples, num_units, ...
+                                   activation_function_type, X)
+                               
 %fprintf('predictions for %d data points are: \n',num_data_samples);
 hypothesis = activation{num_layers}
 
+% for layer = 1:num_layers-1
+%     % initialise cell array containing node activation errors for each layer
+%     % except input layer
+%     if layer == num_layers-1
+%         % No bias term in final (output) layer        
+%         activation_error(layer) = {zeros(num_units(layer+1),num_data_samples)};
+%     else   
+%         activation_error(layer) = {zeros(num_units(layer+1)+1,num_data_samples)};
+%     end
+% end
+
+[
+     
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 %%%% Now to determine the activation error of each node %%
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
    
 % Activation error of final (output) layer
-activation_error{num_layers-1} = activation{num_layers}' - y';
+activation_error{num_layers-1} = activation{num_layers}' - y'
 
 cost = 1/(2*num_data_samples)*activation_error{num_layers-1}*activation_error{num_layers-1}';
 
@@ -208,8 +185,8 @@ for layer = 1:num_layers-1
    
    % Now to calculate regularized gradient. Weights connected to bias 
    % nodes are not regularized.
-   grad_with_reg{layer} = (1/num_data_samples) .* (sum_grad{layer} + ...
-       [ zeros(1,size(weights_array{layer},2)) ; lambda.*weights_array{layer}(2:end,:) ]');
+   grad_with_reg{layer} = ((1/num_data_samples) .* (sum_grad{layer} + ...
+       [ zeros(1,size(weights_array{layer},2)) ; lambda.*weights_array{layer}(2:end,:) ]'))';
    
    
    unroll_grad = [unroll_grad ; grad_with_reg{layer}(:)];
