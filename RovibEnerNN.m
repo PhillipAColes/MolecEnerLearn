@@ -34,14 +34,14 @@ X = [data(:,2) data(:,3) data(:,4)]
 % user should modify the below ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 
 % number of hidden layers
-num_hidden_layers = 1;
+num_hidden_layers = 3;
 
 % number of units in each hidden layer
 %num_hidden_units = [ 20 10 ];
-num_hidden_units = [3]
+num_hidden_units = [3 5 3]
 
 % activation function types
-activation_function_type = {'linear', 'linear'};
+activation_function_type = {'linear', 'linear', 'linear', 'linear'};
 
 feature_scaling_tf = false;
 
@@ -109,6 +109,7 @@ for layer = 1:num_layers-1
     
     % Fill cell of node activation arrays using forward propogation
     if layer+1 == num_layers
+        % No bias term added for output layer
         activation(layer+1) = {activation_next_layer}
     else
        % Array of ones for bias term
@@ -118,28 +119,47 @@ for layer = 1:num_layers-1
     % initialise cell array containing node activation errors for each layer
     % except input layer
     if layer == num_layers-1
-        % No bias node in final (output) layer
-        activation_error(layer) = {zeros(num_data_samples,num_units(layer+1))}
+        % No bias term in final (output) layer
+        
+        activation_error(layer) = {zeros(num_units(layer+1),num_data_samples)}
     else
-        activation_error(layer) = {zeros(num_data_samples,num_units(layer+1)+1)}
+        
+        activation_error(layer) = {zeros(num_units(layer+1)+1,num_data_samples)}
     end
     
 end
 
-fprintf('predictions for %d data points are: \n',num_data_samples)
-hypothesis = activation{num_layers}
+fprintf('predictions for %d data points are: \n',num_data_samples);
+hypothesis = activation{num_layers};
 
+%%% Now to determine the activation error of each node
+
+% Test case for 3 (three) hidden layers
+%activation_error{num_layers-1} = activation{num_layers} - y
+%activation_error{num_layers-2} = weights_array{num_layers-1}*activation_error{num_layers-1}'
+%activation_error{num_layers-3} = weights_array{num_layers-2}*activation_error{num_layers-2}(2:end,:)
+%activation_error{num_layers-4} = weights_array{num_layers-3}*activation_error{num_layers-3}(2:end,:)
+   
 % Activation error of final (output) layer
-activation_error{num_layers-1} = activation{num_layers} - y
+activation_error{num_layers-1} = activation{num_layers}' - y'
 
-%%
-for layer = num_layers-1:-1:2
+% Activation error of the final hidden layer
+if strcmp(activation_function_type{num_layers-1},'sigmoid')
+    activation_error{num_layers-2} = weights_array{num_layers-1}*activation_error{num_layers-1}...
+                                     .*activation{num_layers-1}'.*(1-activation{num_layers-1})'                                
+elseif strcmp(activation_function_type{num_layers-1},'linear')    
+    activation_error{num_layers-2} = weights_array{num_layers-1}*activation_error{num_layers-1}
+end
+
+% Activation error for all other hidden layers
+for layer = num_layers-2:-1:2
     
-    layer
+    layer;
     if strcmp(activation_function_type{layer},'sigmoid')
-    exit
+        activation_error{layer-1} = weights_array{layer}*activation_error{layer}(2:end,:)...
+                                    .*activation{layer}'.*(1-activation{layer})'
     elseif strcmp(activation_function_type{layer},'linear')
-    activation_error{layer} = activation_error{layer}*weights_array{layer}'
+        activation_error{layer-1} = weights_array{layer}*activation_error{layer}(2:end,:)
     end
     
 end
