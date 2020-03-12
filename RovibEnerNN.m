@@ -156,7 +156,7 @@ hypothesis = activation{num_layers}
 % Activation error of final (output) layer
 activation_error{num_layers-1} = activation{num_layers}' - y';
 
-cost = sum(activation_error{num_layers-1});
+cost = 1/(2*num_data_samples)*activation_error{num_layers-1}*activation_error{num_layers-1}';
 
 % Activation error of the final hidden layer
 if strcmp(activation_function_type{num_layers-1},'sigmoid')
