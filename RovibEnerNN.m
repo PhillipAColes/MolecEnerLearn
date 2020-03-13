@@ -47,7 +47,7 @@ activation_function_type = {'linear', 'linear', 'linear', 'linear'};
 feature_scaling_tf = true;
 
 % regularisation parameter
-lambda = 1
+lambda = 0
 
 %%%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 
@@ -113,27 +113,21 @@ end
 %fprintf('predictions for %d data points are: \n',num_data_samples);
 hypothesis = activation{num_layers}
 
-% for layer = 1:num_layers-1
-%     % initialise cell array containing node activation errors for each layer
-%     % except input layer
-%     if layer == num_layers-1
-%         % No bias term in final (output) layer        
-%         activation_error(layer) = {zeros(num_units(layer+1),num_data_samples)};
-%     else   
-%         activation_error(layer) = {zeros(num_units(layer+1)+1,num_data_samples)};
-%     end
-% end
+activation_error{num_layers-1} = activation{num_layers}' - y';
 
-[
-     
+cost = ComputeCost(activation_error{num_layers-1}, weights_array, ...
+                                num_data_samples, num_layers, lambda);
+
+
+% Check numerical (unregularized) gradient                            
+numerical_grad = CalcNumericalGradient(weights_array, num_layers,...
+                     num_data_samples, num_units, ...
+                     activation_function_type, X, y, lambda);
+                            
+
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 %%%% Now to determine the activation error of each node %%
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
-   
-% Activation error of final (output) layer
-activation_error{num_layers-1} = activation{num_layers}' - y'
-
-cost = 1/(2*num_data_samples)*activation_error{num_layers-1}*activation_error{num_layers-1}';
 
 % Activation error of the final hidden layer
 if strcmp(activation_function_type{num_layers-1},'sigmoid')
