@@ -3,7 +3,7 @@ function [activation] = ForwardPropagation(weights_array, num_layers,...
                                    activation_function_type, X)
 %FORWARDPROPAGATION explain...
 
-activation(1) = {[ones(num_data_samples,1) X]};
+activation(1) = {X};
                                
 for layer = 1:num_layers-1
 

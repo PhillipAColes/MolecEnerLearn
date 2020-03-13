@@ -36,30 +36,24 @@ X = [data(:,2) data(:,3) data(:,4)];
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
 % number of hidden layers
-num_hidden_layers = 3;
+num_hidden_layers = 1;
 
 % number of units in each hidden layer
-num_hidden_units = [3 5 3]
+num_hidden_units = [3]
 
 % activation function types
-activation_function_type = {'linear', 'linear', 'linear', 'linear'};
+activation_function_type = {'linear', 'linear'};
 
-feature_scaling_tf = true;
+feature_scaling_tf = false;
 
 % regularisation parameter
 lambda = 0
 
 %%%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 
-%%% simple test case performed with pen and paper ~%%
-% y = 10;
-% X = [1 1]
-% num_hidden_layers = 1
-% num_hidden_units = [ 2 ];
-% activation_function_type = {'linear', 'linear'};
-% feature_scaling_tf = false;
-% lambda = 1
-% weights array set to arrays of ones
+%%% simple test cases performed with pen and paper ~%%
+load('Test_1.mat')
+
 %%%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
 
@@ -81,18 +75,18 @@ elseif size(activation_function_type,2) ~= num_hidden_layers+1;
     ' activation functions']);       
 end
 
-% constant used for initialising weights
-epsilon_init = 0.12;
-
-% Initialise weights array
-for layer = 1:num_hidden_layers+1
+% If weigts array has not been pre-loaded then initialise it
+if exist('weights_array')==0
+    % constant used for initialising weights
+    epsilon_init = 0.12;
+    % Initialise weights array
+    for layer = 1:num_hidden_layers+1
     
-    % num_units(layer)+1 <=== +1 comes from bias term 
-    weights_array(layer) = ...
-    {rand(num_units(layer)+1,num_units(layer+1)) * 2 * epsilon_init - epsilon_init};
-    
-    % for testing:
-    %weights_array(layer) = {ones(num_units(layer)+1,num_units(layer+1))}
+        % num_units(layer)+1 <=== +1 comes from bias term 
+        weights_array(layer) = ...
+        {rand(num_units(layer)+1,num_units(layer+1)) * 2 * epsilon_init - epsilon_init};
+        
+    end
 end
 
 if feature_scaling_tf == true
@@ -102,6 +96,8 @@ if feature_scaling_tf == true
     
 end
 
+% Add bias term
+X = [ones(num_data_samples,1) X];
 
 %%~~~~~~~~~~~~~~~~~~~~~~%%
 %%% Forward propagation %%
@@ -114,6 +110,7 @@ end
 hypothesis = activation{num_layers}
 
 activation_error{num_layers-1} = activation{num_layers}' - y';
+
 
 cost = ComputeCost(activation_error{num_layers-1}, weights_array, ...
                                 num_data_samples, num_layers, lambda);
