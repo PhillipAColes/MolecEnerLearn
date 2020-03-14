@@ -29,20 +29,20 @@ clear all;  clc
 cd C:\Users\Phillip\Workspace\ML\RovibEner
 data = load('backproptest-1');
 y = data(:,1);
-X = [data(:,2) data(:,3) data(:,4)];
+X = [data(:,2) data(:,3)];
 
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 %%%% user should modify the below %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
 % number of hidden layers
-num_hidden_layers = 1;
+num_hidden_layers = 2;
 
-% number of units in each hidden layer
-num_hidden_units = [3]
+% number of units in each hidden layer, excluding bias
+num_hidden_units = [3 3]
 
 % activation function types
-activation_function_type = {'linear', 'linear'};
+activation_function_type = {'sigmoid', 'sigmoid', 'linear'};
 
 feature_scaling_tf = false;
 
@@ -52,7 +52,7 @@ lambda = 0
 %%%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 
 %%% simple test cases performed with pen and paper ~%%
-load('Test_1.mat')
+%load('Test_2.mat')
 
 %%%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
@@ -104,12 +104,11 @@ X = [ones(num_data_samples,1) X];
 %%~~~~~~~~~~~~~~~~~~~~~~%%
 
 [activation] = ForwardPropagation(weights_array, num_layers, num_data_samples, num_units, ...
-                                   activation_function_type, X)
+                                   activation_function_type, X);
                                
 %fprintf('predictions for %d data points are: \n',num_data_samples);
-hypothesis = activation{num_layers}
-
-activation_error{num_layers-1} = activation{num_layers}' - y';
+hypothesis = activation{num_layers};
+activation_error{num_layers-1} = hypothesis' - y';
 
 
 cost = ComputeCost(activation_error{num_layers-1}, weights_array, ...
@@ -118,10 +117,18 @@ cost = ComputeCost(activation_error{num_layers-1}, weights_array, ...
 
 % Check numerical (unregularized) gradient                            
 numerical_grad = CalcNumericalGradient(weights_array, num_layers,...
-                     num_data_samples, num_units, ...
-                     activation_function_type, X, y, lambda);
-                            
+                    num_data_samples, num_units, ...
+                    activation_function_type, X, y, lambda);
 
+nn_weights = [];               
+for i=1:num_layers-1
+    nn_weights = [nn_weights ; weights_array{i}(:)];
+end
+
+reshaped_weights = Vec2CellArray(nn_weights,num_layers,num_units)
+
+                            
+%%
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 %%%% Now to determine the activation error of each node %%
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%

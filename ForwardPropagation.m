@@ -8,11 +8,11 @@ activation(1) = {X};
 for layer = 1:num_layers-1
 
     if strcmp(activation_function_type{layer},'sigmoid')
-        fprintf('layer %d uses sigmoid activation function \n',layer)
+        %fprintf('layer %d uses sigmoid activation function \n',layer);
         z = activation{layer}*weights_array{layer};
         activation_next_layer = 1 ./ (1+exp(-z));
     elseif strcmp(activation_function_type{layer},'linear')
-        fprintf('layer %d uses linear activation function \n',layer)
+        %fprintf('layer %d uses linear activation function \n',layer);
         activation_next_layer = activation{layer}*weights_array{layer};
     end
     
