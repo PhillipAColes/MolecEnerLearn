@@ -36,20 +36,20 @@ X = [data(:,2) data(:,3)];
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
 % number of hidden layers
-num_hidden_layers = 2;
+num_hidden_layers = 3;
 
 % number of units in each hidden layer, excluding bias
-num_hidden_units = [3 3]
+num_hidden_units = [10 5 2]
 
 % activation function types
-activation_function_type = {'sigmoid', 'sigmoid', 'linear'};
+activation_function_type = {'sigmoid', 'sigmoid', 'sigmoid', 'linear'};
 
 feature_scaling_tf = false;
 
 % regularisation parameter
 lambda = 0
 
-%%%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
+%%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 
 %%% simple test cases performed with pen and paper ~%%
 %load('Test_2.mat')
@@ -120,39 +120,95 @@ numerical_grad = CalcNumericalGradient(weights_array, num_layers,...
                     num_data_samples, num_units, ...
                     activation_function_type, X, y, lambda);
 
+% Unroll weights ready for backpropagation
 nn_weights = [];               
 for i=1:num_layers-1
     nn_weights = [nn_weights ; weights_array{i}(:)];
 end
 
-reshaped_weights = Vec2CellArray(nn_weights,num_layers,num_units)
+reshaped_weights = Vec2CellArray(nn_weights,num_layers,num_units);
 
-                            
+%[testcost testgrad] = NNBackPropagation(nn_weights, X, y, num_layers, ...
+%                                           num_data_samples, num_units, ...
+%                                           activation_function_type, lambda)
+
+
+grad = cellfun(@(x) x*0,weights_array,'un',0)
+
+for t = 1:num_data_samples
+    
+    %activation error of output due to one training example
+    activation_error{num_layers-1} = hypothesis(t)' - y(t)';
+    
+    grad{num_layers-1} = grad{num_layers-1} + ...
+                         activation_error{num_layers-1}(:)'*activation{num_layers-1}(t,:)';
+    
+    activation_error{num_layers-2} = weights_array{num_layers-1}*activation_error{num_layers-1}...
+                                     .*activation{num_layers-1}(t,:)'.*(1 - activation{num_layers-1}(t,:))';
+                                
+    grad{num_layers-2} = grad{num_layers-2} + ...
+                         (activation_error{num_layers-2}(2:end)*activation{num_layers-2}(t,:))';
+             
+    activation_error{num_layers-3} = weights_array{num_layers-2}*activation_error{num_layers-2}(2:end)...
+                                     .*activation{num_layers-2}(t,:)'.*(1 - activation{num_layers-2}(t,:))';
+                                 
+    grad{num_layers-3} = grad{num_layers-3} + ...
+                         (activation_error{num_layers-3}(2:end)*activation{num_layers-3}(t,:))';
+                     
+    activation_error{num_layers-4} = weights_array{num_layers-3}*activation_error{num_layers-3}(2:end)...
+                                     .*activation{num_layers-3}(t,:)'.*(1 - activation{num_layers-3}(t,:))';
+                                 
+    grad{num_layers-4} = grad{num_layers-4} + ...
+                         (activation_error{num_layers-4}(2:end)*activation{num_layers-4}(t,:))';
+                     
+%     activation error of output due to one training example
+%     activation_error{num_layers-1} = hypothesis(t) - y(t);
+%     
+%     grad{num_layers-1} = grad{num_layers-1} + ...
+%                          activation_error{num_layers-1}(:)'*activation{num_layers-1}(t,:)'
+%     
+%     for layer = num_layers-2:-1:1
+%     layer
+%     
+%     activation_error{layer} = weights_array{layer+1}*activation_error{layer+1}...
+%                                      .*activation{layer+1}(t,:)'.*(1 - activation{layer+1}(t,:))'
+%                                
+%     grad{layer} = grad{layer} + ...
+%                          (activation_error{layer}(2:end)'*activation{layer}(t,:))'
+%     end
+    
+end
+                                       
+                                       
+                                       
+                                       
 %%
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 %%%% Now to determine the activation error of each node %%
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
 % Activation error of the final hidden layer
-if strcmp(activation_function_type{num_layers-1},'sigmoid')
+%if strcmp(activation_function_type{num_layers-1},'sigmoid')
     activation_error{num_layers-2} = weights_array{num_layers-1}*activation_error{num_layers-1}...
                                      .*activation{num_layers-1}'.*(1-activation{num_layers-1})';                            
-elseif strcmp(activation_function_type{num_layers-1},'linear')    
-    activation_error{num_layers-2} = weights_array{num_layers-1}*activation_error{num_layers-1};
-end
+%elseif strcmp(activation_function_type{num_layers-1},'linear')    
+%    activation_error{num_layers-2} = weights_array{num_layers-1}*activation_error{num_layers-1};
+%end
+
 
 % Activation error for all other hidden layers
 for layer = num_layers-2:-1:2
     
     layer;
     if strcmp(activation_function_type{layer},'sigmoid')
-        activation_error{layer-1} = weights_array{layer}*activation_error{layer}(2:end,:)...
+        activation_error{layer-1} = weights_array{layer}*activation_error{layer}...%(2:end,:)...
                                     .*activation{layer}'.*(1-activation{layer})';
     elseif strcmp(activation_function_type{layer},'linear')
         activation_error{layer-1} = weights_array{layer}*activation_error{layer}(2:end,:);
     end
     
 end
+ 
 
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 %%%% Now to calculate regularized gradient %%
