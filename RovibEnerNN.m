@@ -47,12 +47,12 @@ activation_function_type = {'sigmoid', 'sigmoid', 'sigmoid', 'sigmoid', 'sigmoid
 feature_scaling_tf = false;
 
 % regularisation parameter
-lambda = 0
+lambda = 0.1
 
 %%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 
 %%% simple test cases performed with pen and paper ~%%
-load('Test_2.mat')
+%load('Test_2.mat')
 
 %%%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
@@ -114,12 +114,6 @@ activation_error{num_layers-1} = hypothesis' - y';
 cost = ComputeCost(activation_error{num_layers-1}, weights_array, ...
                                 num_data_samples, num_layers, lambda);
 
-
-% Check numerical (unregularized) gradient                            
-numerical_grad = CalcNumericalGradient(weights_array, num_layers,...
-                    num_data_samples, num_units, ...
-                    activation_function_type, X, y, lambda);
-
 % Unroll weights ready for backpropagation
 nn_weights = [];               
 for i=1:num_layers-1
@@ -128,13 +122,16 @@ end
 
 reshaped_weights = Vec2CellArray(nn_weights,num_layers,num_units);
 
-[testcost testgrad] = NNBackPropagation(nn_weights, X, y, num_layers, ...
-                                        num_data_samples, num_units, ...
-                                        activation_function_type, lambda)
+[cost unrolled_grad] = NNBackPropagation(nn_weights, X, y, num_layers, ...
+                                num_data_samples, num_units, ...
+                                activation_function_type, lambda);
 
+grad = Vec2CellArray(unrolled_grad,num_layers,num_units);
 
-
-                                       
+% Check numerical gradient                            
+numerical_grad = CalcNumericalGradient(weights_array, num_layers,...
+                    num_data_samples, num_units, ...
+                    activation_function_type, X, y, lambda);                                       
                                        
                                        
                                        
