@@ -161,21 +161,7 @@ for t = 1:num_data_samples
     grad{num_layers-4} = grad{num_layers-4} + ...
                          (activation_error{num_layers-4}(2:end)*activation{num_layers-4}(t,:))';
                      
-%     activation error of output due to one training example
-%     activation_error{num_layers-1} = hypothesis(t) - y(t);
-%     
-%     grad{num_layers-1} = grad{num_layers-1} + ...
-%                          activation_error{num_layers-1}(:)'*activation{num_layers-1}(t,:)'
-%     
-%     for layer = num_layers-2:-1:1
-%     layer
-%     
-%     activation_error{layer} = weights_array{layer+1}*activation_error{layer+1}...
-%                                      .*activation{layer+1}(t,:)'.*(1 - activation{layer+1}(t,:))'
-%                                
-%     grad{layer} = grad{layer} + ...
-%                          (activation_error{layer}(2:end)'*activation{layer}(t,:))'
-%     end
+
     
 end
                                        
