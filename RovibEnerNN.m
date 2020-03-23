@@ -24,30 +24,30 @@ X = [ JJ1 JJ2 K2 K4 JK ];%rigid rotor for only J and K
 %SAlTY quantum numbers [v1 v2 v3 v4 l3 l4 l J K]
 %X = [data(:,10:15) data(:,9) data(:,4) data(:,7) JJ1 JJ2 JK K4 ];
 
-%%
-clear all;  clc
-cd C:\Users\Phillip\Workspace\ML\RovibEner
-data = load('backproptest-1');
-y = data(:,1);
-X = [data(:,2) data(:,3)];
+
+% clear all;  clc
+% cd C:\Users\Phillip\Workspace\ML\RovibEner
+% data = load('backproptest-1');
+% y = data(:,1);
+% X = [data(:,2) data(:,3)];
 
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 %%%% user should modify the below %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
 % number of hidden layers
-num_hidden_layers = 5;
+num_hidden_layers = 1;
 
 % number of units in each hidden layer, excluding bias
-num_hidden_units = [10 5 2 2 2]
+num_hidden_units = [5]
 
 % activation function types
-activation_function_type = {'sigmoid', 'sigmoid', 'sigmoid', 'sigmoid', 'sigmoid', 'linear'};
+activation_function_type = {'sigmoid', 'linear'};
 
-feature_scaling_tf = false;
+feature_scaling_tf = true;
 
 % regularisation parameter
-lambda = 0.1
+lambda = 0.3
 
 %%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 
@@ -131,7 +131,18 @@ grad = Vec2CellArray(unrolled_grad,num_layers,num_units);
 % Check numerical gradient                            
 numerical_grad = CalcNumericalGradient(weights_array, num_layers,...
                     num_data_samples, num_units, ...
-                    activation_function_type, X, y, lambda);                                       
+                    activation_function_type, X, y, lambda); 
+
+% Create shorthand for cost function to be minimised
+backPropagation = @(p) NNBackPropagation(p, X, y, num_layers, ...
+                                num_data_samples, num_units, ...
+                                activation_function_type, lambda);
+                
+options = optimset('MaxIter', 1000);
+
+% Now, costFunction is a function that takes in only one argument (the
+% neural network parameters)
+[nn_params, cost] = fmincg(backPropagation, nn_weights, options);
                                        
                                        
                                        
