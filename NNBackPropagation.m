@@ -10,34 +10,48 @@ activation = ForwardPropagation(weights_array, num_layers,...
                                    num_data_samples, num_units, ...
                                    activation_function_type, X);
                                
-hypothesis = activation{num_layers}
-output_error = hypothesis' - y'
+output_error = activation{num_layers}' - y';
 
 cost = ComputeCost(output_error, weights_array, ...
                                 num_data_samples, num_layers, lambda);
 
-
-activation_error(num_layers-1) = {output_error}
-
 grad = cellfun(@(x) x*0,weights_array,'un',0)
 
+% Unvectorised approach
 for t = 1:num_data_samples
     
-    activation_error = {output_error(t)}
-    grad{num_layers-1} = grad{num_layers-1} + ...
-                         activation_error{num_layers-1}(:)'*activation{num_layers-1}(:)'
+    % Find the error on the output layer and last hidden layer, as well as
+    % the gradient of the cost function w.r.t the weights of the last two
+    % layers
+    activation_error{num_layers-1} = output_error(t);
     
-    activation_error{num_layers-2} = activation_error{num_layers-1}(:,t)*weights_array{num_layers-1}'
-    %for layer = num_layers-2,-1,1
-        
-       % if strcmp(activation_function_type{layer},'sigmoid')
-   %     activation_error{layer} = activation_error{layer+1}*weights_array{layer}...
-      %                          .*activation{layer-1}.*(1-activation{layer-1});
-       % delta2 = delta3'*Theta2.*a2(:,i)'.*(1-a2(:,i))';
-        
-   % end
+    grad{num_layers-1} = grad{num_layers-1} + ...
+                         activation_error{num_layers-1}(:)'*activation{num_layers-1}(t,:)';
+    
+    activation_error{num_layers-2} = weights_array{num_layers-1}*activation_error{num_layers-1}...
+                                     .*activation{num_layers-1}(t,:)'.*(1 - activation{num_layers-1}(t,:))';
+                                
+    grad{num_layers-2} = grad{num_layers-2} + ...
+                         (activation_error{num_layers-2}(2:end)*activation{num_layers-2}(t,:))';
+
+    % If we only have one hidden layer
+    if( num_layers == 3 )continue;end;                      
+    
+    % Find the gradient for the remaining layers
+    for layer = num_layers-2:-1:2
+
+    activation_error{layer-1} = weights_array{layer}*activation_error{layer}(2:end)...
+                                     .*activation{layer}(t,:)'.*(1 - activation{layer}(t,:))';
+                                 
+    grad{layer-1} = grad{layer-1} + ...
+                         (activation_error{layer-1}(2:end)*activation{layer-1}(t,:))';
+                     
+    end
+
     
 end
+
+
 
 end
 

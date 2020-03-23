@@ -36,13 +36,13 @@ X = [data(:,2) data(:,3)];
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
 % number of hidden layers
-num_hidden_layers = 3;
+num_hidden_layers = 5;
 
 % number of units in each hidden layer, excluding bias
-num_hidden_units = [10 5 2]
+num_hidden_units = [10 5 2 2 2]
 
 % activation function types
-activation_function_type = {'sigmoid', 'sigmoid', 'sigmoid', 'linear'};
+activation_function_type = {'sigmoid', 'sigmoid', 'sigmoid', 'sigmoid', 'sigmoid', 'linear'};
 
 feature_scaling_tf = false;
 
@@ -52,7 +52,7 @@ lambda = 0
 %%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%%%
 
 %%% simple test cases performed with pen and paper ~%%
-%load('Test_2.mat')
+load('Test_2.mat')
 
 %%%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%%
 
@@ -128,42 +128,12 @@ end
 
 reshaped_weights = Vec2CellArray(nn_weights,num_layers,num_units);
 
-%[testcost testgrad] = NNBackPropagation(nn_weights, X, y, num_layers, ...
-%                                           num_data_samples, num_units, ...
-%                                           activation_function_type, lambda)
+[testcost testgrad] = NNBackPropagation(nn_weights, X, y, num_layers, ...
+                                        num_data_samples, num_units, ...
+                                        activation_function_type, lambda)
 
 
-grad = cellfun(@(x) x*0,weights_array,'un',0)
 
-for t = 1:num_data_samples
-    
-    %activation error of output due to one training example
-    activation_error{num_layers-1} = hypothesis(t)' - y(t)';
-    
-    grad{num_layers-1} = grad{num_layers-1} + ...
-                         activation_error{num_layers-1}(:)'*activation{num_layers-1}(t,:)';
-    
-    activation_error{num_layers-2} = weights_array{num_layers-1}*activation_error{num_layers-1}...
-                                     .*activation{num_layers-1}(t,:)'.*(1 - activation{num_layers-1}(t,:))';
-                                
-    grad{num_layers-2} = grad{num_layers-2} + ...
-                         (activation_error{num_layers-2}(2:end)*activation{num_layers-2}(t,:))';
-             
-    activation_error{num_layers-3} = weights_array{num_layers-2}*activation_error{num_layers-2}(2:end)...
-                                     .*activation{num_layers-2}(t,:)'.*(1 - activation{num_layers-2}(t,:))';
-                                 
-    grad{num_layers-3} = grad{num_layers-3} + ...
-                         (activation_error{num_layers-3}(2:end)*activation{num_layers-3}(t,:))';
-                     
-    activation_error{num_layers-4} = weights_array{num_layers-3}*activation_error{num_layers-3}(2:end)...
-                                     .*activation{num_layers-3}(t,:)'.*(1 - activation{num_layers-3}(t,:))';
-                                 
-    grad{num_layers-4} = grad{num_layers-4} + ...
-                         (activation_error{num_layers-4}(2:end)*activation{num_layers-4}(t,:))';
-                     
-
-    
-end
                                        
                                        
                                        
