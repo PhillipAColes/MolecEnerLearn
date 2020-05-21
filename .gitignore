@@ -4,7 +4,6 @@
 31P-1H3__SAlTY_100000n.states
 31P-1H3__SAlTY_100000n_nu0.states
 31P-1H3__SAlTY_10000n.states
-31P-1H3__SAlTY_5000n.states
 31P-1H3__SAlTY_xnu1.states
 31P-1H3__SAlTY_xnu1_0-3.states
 31P-1H3__SAlTY_xnu3.states
@@ -22,12 +21,11 @@ subset-2.pdf
 testscript.py
 RovibEnerNN.asv
 31P-1H3__SAlTY_100000n_c.states
-31P-1H3__SAlTY_500n_nu0.states
 NNBackPropagation_tanh.m
 print.awk
 Test_3.m
 Test_3.mat
 Test_1.m
 Test_1.mat
-Test_2.m
-Test_2.mat.gitignore
+Test_2.mat
+.gitignore
