@@ -3,8 +3,8 @@ clear all;  clc
  y = 10;
  X = [1 1]
  num_hidden_layers = 1
- num_hidden_units = [ 2 ];
- activation_function_type = {'linear', 'linear'};
+ num_hidden_units = [ 4 ];
+ activation_function_type = {'tanh', 'linear'};
  feature_scaling_tf = false;
  lambda = 0
  num_units = [ size(X,2) num_hidden_units 1 ];
