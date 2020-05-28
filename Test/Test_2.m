@@ -1,4 +1,4 @@
-% This is a script to generate the NN input params saved in Test-1.mat
+% This is a script to generate the NN input params saved in Test-2.mat
 clear all;  clc
  y = 10; %label
  X = [1 1] %two features

@@ -1,4 +1,4 @@
-% This is a script to generate the NN input params saved in Test-1.mat
+% This is a script to generate the NN input params saved in Test-4.mat
 clear all;  clc
 a = -0.5;
 b = 0.5;

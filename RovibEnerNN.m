@@ -2,9 +2,7 @@ clear all;  clc
 cd C:\Users\Phillip\Workspace\ML\RovibEner
 
 fprintf('Loading data ...\n');
-%data = load('31P-1H3__SAlTY_100000n_nu0.states');
-%data = load('31P-1H3__SAlTY_100000n.states');
-data = load('31P-1H3__SAlTY_500n_nu0.states');
+data = load('.\input_states\31P-1H3__SAlTY_500n_nu0.states');
 fprintf('... done\n');
 
 %SAlTY term values
